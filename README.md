@@ -1,7 +1,7 @@
 # 🌌 Exoplanets Detection Using Machine Learning
 
 This project is designed to help cosmology scientists and researchers save time by automating the detection of exoplanets using machine learning techniques.  
-By uploading data, the system automatically builds multiple models, evaluates them, and displays performance metrics — making the research workflow faster and more efficient.  
+By uploading data, the system automatically builds multiple models, allow the user to change hyperparameters for the models, evaluates them, and displays performance metrics — making the research workflow faster and more efficient.  
 
 ---
 
