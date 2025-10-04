@@ -2,12 +2,12 @@ import React, { useState } from "react";
 
 const DATASETS = [
   { id: "Kepler_notebook.ipynb", title: "Kepler" },
-  { id: "K2_notebook.ipynb", title: "K2" },
+  { id: "K2.ipynb", title: "K2" },
   { id: "Tess_Notebook.ipynb", title: "TESS" },
-  { id: "Light_Curve_notebook.ipynb", title: "Light Curve" },
+  { id: "Light_curve_notebook.ipynb", title: "Light Curve" },
 ];
 
-export default function DatasetSelector(){
+export default function DatasetSelector() {
   const [selected, setSelected] = useState(DATASETS[0].id);
 
   return (
@@ -19,7 +19,7 @@ export default function DatasetSelector(){
             <h3 className="font-semibold text-cyan-300">{ds.title}</h3>
             <p className="text-gray-400 mt-2">Use ML models trained on {ds.title} data.</p>
             <div className="mt-4">
-              <input type="radio" name="dataset" value={ds.id} checked={selected===ds.id} onChange={()=>setSelected(ds.id)} />
+              <input type="radio" name="dataset" value={ds.id} checked={selected === ds.id} onChange={() => setSelected(ds.id)} />
             </div>
           </div>
         ))}

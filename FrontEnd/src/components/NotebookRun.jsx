@@ -3,9 +3,9 @@ import { runNotebook } from "../api";
 
 const NOTEBOOK_OPTIONS = [
   "Kepler_notebook.ipynb",
-  "K2_notebook.ipynb", 
+  "K2.ipynb",
   "Tess_Notebook.ipynb",
-  "Light_Curve_notebook.ipynb"
+  "Light_curve_notebook.ipynb"
 ];
 
 export default function NotebookRun() {
@@ -16,7 +16,7 @@ export default function NotebookRun() {
   const handleRunNotebook = async () => {
     setLoading(true);
     setOutput(null);
-    
+
     try {
       const result = await runNotebook(selectedNotebook, {});
       setOutput(result);
@@ -30,7 +30,7 @@ export default function NotebookRun() {
   return (
     <div className="max-w-4xl mx-auto px-4">
       <h2 className="text-3xl font-bold mb-8 text-center">Run Jupyter Notebooks</h2>
-      
+
       <div className="bg-gray-800 rounded-xl p-6">
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-300 mb-2">
