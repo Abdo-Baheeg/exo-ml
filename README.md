@@ -10,7 +10,7 @@
 
 **An AI-powered web platform for detecting exoplanets using machine learning on Kepler, K2, TESS, and light curve data.**
 
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [API Documentation](#-api-documentation) • [Contributing](#-contributing)
+[Features](#-features) • [Installation](#-installation) • [Usage](#-usage-guide) • [API Documentation](#-api-documentation) • [Contributing](#-contributing)
 
 </div>
 
