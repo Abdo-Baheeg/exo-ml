@@ -29,7 +29,7 @@ def health_check():
 def list_notebooks():
     """إرجاع قائمة النوت بوك المتاحة"""
     try:
-        notebooks_dir = os.path.join(os.path.dirname(__file__), 'notebooks')
+        notebooks_dir = os.path.join(os.path.dirname(__file__), 'Note books')
         notebooks = [f for f in os.listdir(notebooks_dir) if f.endswith('.ipynb')]
         return jsonify({
             "notebooks": notebooks,
@@ -48,7 +48,7 @@ def run_notebook():
         if not notebook_name:
             return jsonify({"error": "No notebook specified"}), 400
         
-        notebook_path = os.path.join(os.path.dirname(__file__), 'notebooks', notebook_name)
+        notebook_path = os.path.join(os.path.dirname(__file__), 'Note books', notebook_name)
         
         if not os.path.exists(notebook_path):
             return jsonify({"error": f"Notebook not found: {notebook_name}"}), 404
