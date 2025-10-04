@@ -14,18 +14,22 @@ const MILESTONES = [
 
 export default function Timeline() {
   return (
-    <div className="max-w-6xl mx-auto">
-      <h2 className="text-3xl font-semibold mb-6">History of Exoplanet Exploration</h2>
+    <div className="max-w-6xl mx-auto px-6">
+      <h2 className="text-4xl md:text-5xl font-black mb-12 text-center" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+        <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
+          EXPLORATION TIMELINE
+        </span>
+      </h2>
 
       <div className="relative">
         <div className="overflow-x-auto py-6">
-          <div className="flex space-x-10 px-4">
+          <div className="flex space-x-8 px-4">
             {MILESTONES.map((m, idx) => (
-              <div key={idx} className="min-w-[220px] flex-shrink-0">
-                <div className="p-4 bg-[#061227] rounded-lg border border-gray-800 shadow hover:scale-105 transition transform">
-                  <div className="text-sm text-cyan-300 font-bold">{m.year}</div>
-                  <div className="mt-2 text-lg font-semibold">{m.title}</div>
-                  <div className="mt-2 text-gray-300 text-sm">{m.detail}</div>
+              <div key={idx} className="min-w-[240px] flex-shrink-0">
+                <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl hover:border-cyan-400/50 hover:scale-105 transition-all duration-300 group">
+                  <div className="text-xs text-cyan-400 font-bold uppercase tracking-wider mb-2">{m.year}</div>
+                  <div className="mt-2 text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">{m.title}</div>
+                  <div className="mt-3 text-gray-400 text-sm leading-relaxed">{m.detail}</div>
                 </div>
               </div>
             ))}
@@ -33,14 +37,10 @@ export default function Timeline() {
         </div>
 
         {/* timeline line */}
-        <div className="hidden md:block absolute left-0 right-0 top-1/2 transform -translate-y-1/2 h-1 pointer-events-none">
-          <div className="w-full h-1 bg-gradient-to-r from-purple-700 via-cyan-500 to-purple-700 opacity-30 rounded-full" />
+        <div className="hidden md:block absolute left-0 right-0 top-1/2 transform -translate-y-1/2 h-0.5 pointer-events-none">
+          <div className="w-full h-full bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
         </div>
       </div>
-
-      <p className="mt-6 text-gray-400">
-        يمكنك إضافة نقاط جديدة بتحرير مصفوفة <code>MILESTONES</code> داخل الملف.
-      </p>
     </div>
   );
 }
