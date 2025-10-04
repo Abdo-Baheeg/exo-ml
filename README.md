@@ -646,7 +646,7 @@ This project is licensed under the MIT License. See `LICENSE` file for details.
 - **Abdulrahman Ghazy** - [abdo-ghg](https://github.com/abdo-ghg)
 - **Omar Marey** - [OMarey1](https://github.com/OMarey1)
 - **Abdulrahman Bahig**
-- **Abdulrahman Bebo**
+- **Abdulrahman Adel**
 - **Ali Mahmoud**
 
 ---
