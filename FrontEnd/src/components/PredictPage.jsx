@@ -1,33 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { predict } from "../api";
 
 export default function PredictPage() {
-    const [dataType, setDataType] = useState("csv");
-    const [inputData, setInputData] = useState("");
-    const [selectedModel, setSelectedModel] = useState("CNN");
     const [selectedDataset, setSelectedDataset] = useState("Kepler");
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [file, setFile] = useState(null);
+    const [modelFeatures, setModelFeatures] = useState([]);
+    const [featureValues, setFeatureValues] = useState({});
 
-    const models = ["CNN", "Random Forest", "SVM", "XGBoost"];
     const datasets = [
-        { id: "Kepler_notebook.ipynb", name: "Kepler" },
-        { id: "K2.ipynb", name: "K2" },
-        { id: "Tess_Notebook.ipynb", name: "TESS" },
-        { id: "Light_curve_notebook.ipynb", name: "Light Curve" }
+        { id: "Kepler", name: "Kepler" },
+        { id: "K2", name: "K2" },
+        { id: "TESS", name: "TESS" },
+        { id: "Light_Curve", name: "Light Curve" }
     ];
 
-    const handleFileUpload = (e) => {
-        const uploadedFile = e.target.files[0];
-        if (uploadedFile) {
-            setFile(uploadedFile);
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setInputData(event.target.result);
-            };
-            reader.readAsText(uploadedFile);
-        }
+    // Fetch features for the selected model
+    useEffect(() => {
+        const fetchModelFeatures = async () => {
+            try {
+                const response = await fetch(`/api/model-features/${selectedDataset}`);
+                const data = await response.json();
+                if (data.success) {
+                    setModelFeatures(data.features);
+                    // Initialize feature values with defaults
+                    const initialValues = {};
+                    data.features.forEach(feature => {
+                        initialValues[feature.name] = feature.default || 0;
+                    });
+                    setFeatureValues(initialValues);
+                }
+            } catch (error) {
+                console.error("Error fetching model features:", error);
+            }
+        };
+
+        fetchModelFeatures();
+    }, [selectedDataset]);
+
+    const handleFeatureChange = (featureName, value) => {
+        setFeatureValues(prev => ({
+            ...prev,
+            [featureName]: parseFloat(value) || 0
+        }));
     };
 
     const handlePredict = async () => {
@@ -35,19 +50,26 @@ export default function PredictPage() {
         setResult(null);
 
         try {
-            let parsedData;
-            if (dataType === "csv") {
-                parsedData = inputData.split(",").map(s => parseFloat(s.trim()));
-            } else if (dataType === "json") {
-                parsedData = JSON.parse(inputData);
-            } else {
-                parsedData = inputData.split(/\s+/).map(s => parseFloat(s.trim()));
-            }
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: selectedDataset,
+                    dataset: selectedDataset,
+                    features: featureValues
+                })
+            });
 
-            const res = await predict(selectedModel, parsedData, selectedDataset);
-            setResult(res);
+            const data = await response.json();
+            if (data.success) {
+                setResult(data);
+            } else {
+                setResult({ error: data.error || "Prediction failed" });
+            }
         } catch (err) {
-            setResult({ error: "Invalid input format or prediction failed: " + err.message });
+            setResult({ error: "Prediction failed: " + err.message });
         } finally {
             setLoading(false);
         }
@@ -73,15 +95,15 @@ export default function PredictPage() {
                     <div className="space-y-6">
                         {/* Dataset Selection */}
                         <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <h3 className="text-xl font-bold text-white mb-4">Select Dataset</h3>
+                            <h3 className="text-xl font-bold text-white mb-4">Select Model / Dataset</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {datasets.map((dataset) => (
                                     <button
                                         key={dataset.id}
                                         onClick={() => setSelectedDataset(dataset.id)}
                                         className={`p-4 rounded-xl border-2 transition-all ${selectedDataset === dataset.id
-                                                ? "border-cyan-400 bg-cyan-400/10 text-white"
-                                                : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
+                                            ? "border-cyan-400 bg-cyan-400/10 text-white"
+                                            : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
                                             }`}
                                     >
                                         <div className="font-semibold">{dataset.name}</div>
@@ -90,92 +112,60 @@ export default function PredictPage() {
                             </div>
                         </div>
 
-                        {/* Model Selection */}
+                        {/* Feature Input Table */}
                         <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <h3 className="text-xl font-bold text-white mb-4">Select Model</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                {models.map((model) => (
-                                    <button
-                                        key={model}
-                                        onClick={() => setSelectedModel(model)}
-                                        className={`p-4 rounded-xl border-2 transition-all ${selectedModel === model
-                                                ? "border-cyan-400 bg-cyan-400/10 text-white"
-                                                : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
-                                            }`}
-                                    >
-                                        <div className="font-semibold">{model}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Data Input Type */}
-                        <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <h3 className="text-xl font-bold text-white mb-4">Data Input Type</h3>
-                            <div className="flex space-x-3">
-                                {["csv", "json", "text"].map((type) => (
-                                    <button
-                                        key={type}
-                                        onClick={() => setDataType(type)}
-                                        className={`flex-1 py-3 rounded-lg border-2 transition-all uppercase text-sm font-semibold ${dataType === type
-                                                ? "border-cyan-400 bg-cyan-400/10 text-white"
-                                                : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
-                                            }`}
-                                    >
-                                        {type}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* File Upload */}
-                        <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <h3 className="text-xl font-bold text-white mb-4">Upload File</h3>
-                            <label className="block">
-                                <div className="flex items-center justify-center w-full p-8 border-2 border-dashed border-white/20 rounded-xl hover:border-cyan-400 transition-all cursor-pointer group">
-                                    <div className="text-center">
-                                        <svg className="mx-auto h-12 w-12 text-gray-400 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                        </svg>
-                                        <p className="mt-2 text-sm text-gray-400">
-                                            {file ? file.name : "Click to upload or drag and drop"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">CSV, JSON, or TXT files</p>
-                                    </div>
-                                </div>
-                                <input
-                                    type="file"
-                                    className="hidden"
-                                    accept=".csv,.json,.txt"
-                                    onChange={handleFileUpload}
-                                />
-                            </label>
-                        </div>
-
-                        {/* Manual Input */}
-                        <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <h3 className="text-xl font-bold text-white mb-4">Or Enter Data Manually</h3>
-                            <textarea
-                                value={inputData}
-                                onChange={(e) => setInputData(e.target.value)}
-                                placeholder={
-                                    dataType === "csv"
-                                        ? "e.g., 0.1, 0.2, 0.3, 0.4, 0.5"
-                                        : dataType === "json"
-                                            ? 'e.g., [0.1, 0.2, 0.3, 0.4, 0.5]'
-                                            : "e.g., 0.1 0.2 0.3 0.4 0.5"
-                                }
-                                className="w-full h-32 p-4 bg-black/40 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors font-mono text-sm resize-none"
-                            />
-                            <p className="mt-2 text-xs text-gray-500">
-                                Enter your data in {dataType.toUpperCase()} format
+                            <h3 className="text-xl font-bold text-white mb-2">Enter Top 3 Features</h3>
+                            <p className="text-sm text-gray-400 mb-6">
+                                These are the most important features for the {selectedDataset} model
                             </p>
+
+                            <div className="space-y-4">
+                                {modelFeatures.map((feature, index) => (
+                                    <div key={feature.name} className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-white font-semibold text-sm">
+                                                {index + 1}. {feature.label}
+                                            </label>
+                                            <span className="text-xs text-cyan-400 font-mono">
+                                                ({feature.unit})
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mb-2">
+                                            {feature.description}
+                                        </p>
+                                        <div className="flex items-center space-x-3">
+                                            <input
+                                                type="number"
+                                                value={featureValues[feature.name] || feature.default}
+                                                onChange={(e) => handleFeatureChange(feature.name, e.target.value)}
+                                                min={feature.min}
+                                                max={feature.max}
+                                                step={(feature.max - feature.min) / 100}
+                                                className="flex-1 px-4 py-3 bg-black/40 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-400 transition-colors font-mono"
+                                                placeholder={`${feature.min} - ${feature.max}`}
+                                            />
+                                            <div className="text-xs text-gray-500 w-24 text-right">
+                                                Range: {feature.min}-{feature.max}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {modelFeatures.length === 0 && (
+                                <div className="text-center py-8 text-gray-500">
+                                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Loading features...
+                                </div>
+                            )}
                         </div>
 
                         {/* Predict Button */}
                         <button
                             onClick={handlePredict}
-                            disabled={loading || !inputData}
+                            disabled={loading || modelFeatures.length === 0}
                             className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                         >
                             {loading ? (
@@ -240,8 +230,8 @@ export default function PredictPage() {
                                     <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
                                         <h4 className="text-gray-400 text-sm uppercase tracking-wider mb-3">Classification</h4>
                                         <div className={`inline-block px-4 py-2 rounded-lg font-semibold ${result.label === "Exoplanet"
-                                                ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                                : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                            : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
                                             }`}>
                                             {result.label}
                                         </div>
@@ -253,12 +243,18 @@ export default function PredictPage() {
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">Model:</span>
-                                                <span className="text-white font-semibold">{result.model || selectedModel}</span>
+                                                <span className="text-white font-semibold">{result.model || selectedDataset}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">Dataset:</span>
                                                 <span className="text-white font-semibold">{datasets.find(d => d.id === selectedDataset)?.name}</span>
                                             </div>
+                                            {result.raw?.model_type && (
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-500">Model Type:</span>
+                                                    <span className="text-white font-semibold">{result.raw.model_type}</span>
+                                                </div>
+                                            )}
                                             {result.raw?.confidence && (
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-500">Confidence:</span>
@@ -267,6 +263,23 @@ export default function PredictPage() {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Features Used */}
+                                    {result.features_used && (
+                                        <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+                                            <h4 className="text-gray-400 text-sm uppercase tracking-wider mb-3">Features Used</h4>
+                                            <div className="space-y-2">
+                                                {Object.entries(result.features_used).map(([key, value]) => (
+                                                    <div key={key} className="flex justify-between text-sm">
+                                                        <span className="text-gray-500 capitalize">{key.replace(/_/g, ' ')}:</span>
+                                                        <span className="text-cyan-400 font-mono font-semibold">
+                                                            {typeof value === 'number' ? value.toFixed(4) : value}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Raw Output */}
                                     {result.raw && (

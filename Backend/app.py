@@ -4,7 +4,7 @@ import os
 import subprocess
 import json
 from utils import init_db, save_prediction, get_predictions
-from models import predict_with_model
+from models import predict_with_model, get_model_features
 
 app = Flask(__name__)
 CORS(app)
@@ -24,6 +24,20 @@ def home():
 def health_check():
     """فحص حالة الخادم"""
     return jsonify({"status": "healthy", "database": "connected"})
+
+@app.route('/api/model-features/<model_name>', methods=['GET'])
+def model_features(model_name):
+    """Get the top 3 features for a specific model"""
+    try:
+        features = get_model_features(model_name)
+        return jsonify({
+            "model": model_name,
+            "features": features["features"],
+            "model_type": features["model_type"],
+            "success": True
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "success": False}), 404
 
 @app.route('/api/list-notebooks', methods=['GET'])
 def list_notebooks():
@@ -73,32 +87,46 @@ def run_notebook():
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    """إجراء تنبؤ باستخدام النموذج"""
+    """إجراء تنبؤ باستخدام النموذج مع الميزات الأساسية الثلاثة"""
     try:
         data = request.get_json()
-        model = data.get('model', 'default')
-        input_data = data.get('input', [])
-        notebook = data.get('notebook', 'manual')
+        model = data.get('model', 'Kepler')
+        features = data.get('features', {})
+        dataset = data.get('dataset', 'Kepler')
 
-        if not input_data:
-            return jsonify({"error": "No input data provided"}), 400
+        # Validate that features are provided
+        if not features or len(features) == 0:
+            return jsonify({
+                "error": "No feature data provided",
+                "message": "Please provide values for the top 3 features"
+            }), 400
 
-        # الحصول على التنبؤ
-        probability, label, raw_output = predict_with_model(model, input_data)
+        # Use the model name from dataset if not explicitly provided
+        if model == 'default' or not model:
+            model = dataset
 
-        # حفظ التنبؤ في قاعدة البيانات
-        save_prediction(notebook, model, input_data, probability, label, raw_output)
+        # Get prediction using the model-specific features
+        probability, label, raw_output = predict_with_model(model, features)
+
+        # Save prediction to database
+        save_prediction(dataset, model, features, probability, label, raw_output)
 
         return jsonify({
             "probability": probability,
             "label": label,
             "raw": raw_output,
             "model": model,
+            "dataset": dataset,
+            "features_used": features,
             "success": True
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e),
+            "message": "Prediction failed",
+            "success": False
+        }), 500
 
 @app.route('/api/predictions', methods=['GET'])
 def predictions():
@@ -117,6 +145,7 @@ if __name__ == '__main__':
     print("📊 API available at: http://localhost:5000")
     print("🔗 Endpoints:")
     print("   GET  /api/health")
+    print("   GET  /api/model-features/<model_name>")
     print("   GET  /api/list-notebooks")
     print("   POST /api/run-notebook")
     print("   POST /api/predict")
