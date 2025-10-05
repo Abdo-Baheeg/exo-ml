@@ -1,71 +1,119 @@
 import sqlite3
-import os
-import json
-from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "db.sqlite3")
+<<<<<<< Updated upstream
+def get_connection():
+    return sqlite3.connect("Backend/db.sqlite3")
 
 def init_db():
-    """تهيئة قاعدة البيانات"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS predictions (
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            notebook TEXT,
+            dataset TEXT,
             model TEXT,
-            input_data TEXT,
-            probability REAL,
-            label TEXT,
-            raw_output TEXT
+            input_values TEXT,
+            prediction TEXT
         )
-    ''')
+    """)
     conn.commit()
     conn.close()
-    print("✅ Database initialized successfully")
+=======
+# Path to the SQLite database
+BASE_DIR = os.path.dirname(__file__)
+DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
-def save_prediction(notebook, model, input_data, probability, label, raw_output):
-    """حفظ التنبؤ في قاعدة البيانات"""
+def get_connection():
+    """Create a new connection to the SQLite database"""
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''
-        INSERT INTO predictions (timestamp, notebook, model, input_data, probability, label, raw_output)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        datetime.utcnow().isoformat(),
-        notebook,
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    """Initialize the database if it doesn't exist"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Create the predictions table if it doesn’t exist
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dataset TEXT NOT NULL,
+            model TEXT NOT NULL,
+            features TEXT NOT NULL,
+            probability REAL NOT NULL,
+            label TEXT NOT NULL,
+            raw_output TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+    print("📘 Database initialized successfully.")
+
+
+def save_prediction(dataset, model, features, probability, label, raw_output):
+    """Save prediction details into the database"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO predictions (dataset, model, features, probability, label, raw_output)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        dataset,
         model,
-        json.dumps(input_data),
-        probability,
+        json.dumps(features),
+        float(probability),
         label,
         json.dumps(raw_output)
     ))
+
     conn.commit()
     conn.close()
+    print(f"✅ Prediction saved: {model} | Label: {label} | Prob: {probability:.2f}")
 
-def get_predictions(limit=100):
-    """جلب سجل التنبؤات"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''
-        SELECT id, timestamp, notebook, model, input_data, probability, label 
-        FROM predictions 
-        ORDER BY id DESC 
+
+def get_predictions(limit=50):
+    """Retrieve the most recent predictions"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, dataset, model, features, probability, label, raw_output, created_at
+        FROM predictions
+        ORDER BY created_at DESC
         LIMIT ?
-    ''', (limit,))
-    rows = c.fetchall()
+    """, (limit,))
+
+    rows = cursor.fetchall()
     conn.close()
-    
+
+    # Convert rows to dictionaries
     predictions = []
     for row in rows:
         predictions.append({
-            "id": row[0],
-            "timestamp": row[1],
-            "notebook": row[2],
-            "model": row[3],
-            "input_data": json.loads(row[4]),
-            "probability": row[5],
-            "label": row[6]
+            "id": row["id"],
+            "dataset": row["dataset"],
+            "model": row["model"],
+            "features": json.loads(row["features"]),
+            "probability": row["probability"],
+            "label": row["label"],
+            "raw_output": json.loads(row["raw_output"]) if row["raw_output"] else None,
+            "created_at": row["created_at"]
         })
+
     return predictions
+
+
+def clear_predictions():
+    """Optional: clear all prediction history"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM predictions")
+    conn.commit()
+    conn.close()
+    print("🗑️ All predictions cleared.")
+>>>>>>> Stashed changes
