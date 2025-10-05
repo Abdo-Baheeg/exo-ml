@@ -1,4 +1,4 @@
-const API_BASE = 'https://exo-ml-production.up.railway.app/api';
+const API_BASE = 'https://exo-backend-production.up.railway.app/api';
 
 export async function listNotebooks() {
   const res = await fetch(`${API_BASE}/list-notebooks`);
