@@ -163,11 +163,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-6 text-gray-400 text-sm">
-            <p>
-              ملاحظة: لعرض ROC وConfusion Matrix تحتاج حقول ground-truth (labels الحقيقية). إذا جهزت endpoint مثل <code>/api/metrics</code> يمكن ربطها هنا لعرض مخططات ROC/Confusion.
-            </p>
-          </div>
+          
         </>
       )}
     </div>
