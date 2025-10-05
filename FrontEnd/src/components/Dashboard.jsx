@@ -4,14 +4,14 @@
 
 import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
+import { getPredictions } from "../api";
 
 export default function Dashboard() {
   const [preds, setPreds] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/predictions")
-      .then((r) => r.json())
+    getPredictions()
       .then((data) => {
         setPreds(data.predictions || []);
       })
@@ -163,7 +163,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          
+
         </>
       )}
     </div>

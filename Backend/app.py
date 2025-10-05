@@ -7,7 +7,32 @@ from utils import init_db, save_prediction, get_predictions
 from models import predict_with_model, get_model_features
 
 app = Flask(__name__)
-CORS(app)
+
+# CORS Configuration
+# Allow all origins in development, restrict in production via environment variable
+cors_origins = os.environ.get('CORS_ORIGINS', '*')
+if cors_origins == '*':
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type"],
+            "supports_credentials": False
+        }
+    })
+else:
+    # Production: use specific origins
+    origins_list = [origin.strip() for origin in cors_origins.split(',')]
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": origins_list,
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type"],
+            "supports_credentials": True
+        }
+    })
 
 # تهيئة قاعدة البيانات عند البدء
 init_db()
@@ -17,13 +42,51 @@ def home():
     return jsonify({
         "message": "ExoML Backend API",
         "status": "running",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/api/health",
+            "model_features": "/api/model-features/<model_name>",
+            "list_notebooks": "/api/list-notebooks",
+            "run_notebook": "/api/run-notebook",
+            "predict": "/api/predict",
+            "predictions": "/api/predictions"
+        }
+    })
+
+@app.route('/api')
+def api_home():
+    """API root endpoint"""
+    return jsonify({
+        "message": "ExoML Backend API",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/api/health",
+            "model_features": "/api/model-features/<model_name>",
+            "list_notebooks": "/api/list-notebooks",
+            "run_notebook": "/api/run-notebook",
+            "predict": "/api/predict",
+            "predictions": "/api/predictions"
+        }
     })
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """فحص حالة الخادم"""
-    return jsonify({"status": "healthy", "database": "connected"})
+    try:
+        # Test database connection
+        from utils import get_connection
+        conn = get_connection()
+        conn.close()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    return jsonify({
+        "status": "healthy",
+        "database": db_status,
+        "environment": os.environ.get('FLASK_ENV', 'development')
+    })
 
 @app.route('/api/model-features/<model_name>', methods=['GET'])
 def model_features(model_name):
@@ -45,7 +108,7 @@ def list_notebooks():
     try:
         # Use absolute path and correct folder name (Notebooks, not "Note books")
         notebooks_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Notebooks')
-        
+
         # Check if directory exists
         if not os.path.exists(notebooks_dir):
             return jsonify({
@@ -53,7 +116,7 @@ def list_notebooks():
                 "count": 0,
                 "error": "Notebooks directory not found"
             }), 404
-        
+
         notebooks = [f for f in os.listdir(notebooks_dir) if f.endswith('.ipynb')]
         return jsonify({
             "notebooks": notebooks,
@@ -74,8 +137,8 @@ def run_notebook():
 
         # Use absolute path and correct folder name
         notebook_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 
-            'Notebooks', 
+            os.path.dirname(os.path.abspath(__file__)),
+            'Notebooks',
             notebook_name
         )
 
@@ -166,7 +229,7 @@ if __name__ == '__main__':
     print("   POST /api/run-notebook")
     print("   POST /api/predict")
     print("   GET  /api/predictions")
-    
+
     # Use environment variable to determine if in production
     debug_mode = os.environ.get('FLASK_ENV') != 'production'
     app.run(host='0.0.0.0', port=port, debug=debug_mode)

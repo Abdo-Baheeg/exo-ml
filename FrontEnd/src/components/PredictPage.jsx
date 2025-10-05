@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { predict } from "../api";
+import { predict, getModelFeatures } from "../api";
 
 export default function PredictPage() {
     const [selectedDataset, setSelectedDataset] = useState("Kepler");
@@ -19,8 +19,7 @@ export default function PredictPage() {
     useEffect(() => {
         const fetchModelFeatures = async () => {
             try {
-                const response = await fetch(`/api/model-features/${selectedDataset}`);
-                const data = await response.json();
+                const data = await getModelFeatures(selectedDataset);
                 if (data.success) {
                     setModelFeatures(data.features);
                     // Initialize feature values with defaults
@@ -50,19 +49,7 @@ export default function PredictPage() {
         setResult(null);
 
         try {
-            const response = await fetch('/api/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: selectedDataset,
-                    dataset: selectedDataset,
-                    features: featureValues
-                })
-            });
-
-            const data = await response.json();
+            const data = await predict(selectedDataset, featureValues, selectedDataset);
             if (data.success) {
                 setResult(data);
             } else {
