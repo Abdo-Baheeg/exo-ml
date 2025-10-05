@@ -1,8 +1,10 @@
 // Determine API base URL based on environment
-const API_BASE = import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV
-    ? 'http://localhost:5000/api'
-    : 'https://exo-ml-production.up.railway.app/api');
+// const API_BASE = import.meta.env.VITE_API_BASE_URL ||
+//   (import.meta.env.DEV
+//     ? 'http://localhost:5000/api'
+//     : 'https://exo-ml-production.up.railway.app/api');
+
+const API_BASE = 'https://exo-ml-production.up.railway.app/api';
 
 export async function listNotebooks() {
   const res = await fetch(`${API_BASE}/list-notebooks`);
