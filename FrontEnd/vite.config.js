@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://exo-ml-production.up.railway.app/',
         changeOrigin: true,
         secure: false
       }
