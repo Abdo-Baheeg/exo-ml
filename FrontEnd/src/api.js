@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = 'https://exoml-production.up.railway.app/api';
 
 export async function listNotebooks() {
   const res = await fetch(`${API_BASE}/list-notebooks`);
