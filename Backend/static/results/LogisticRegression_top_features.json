@@ -1,0 +1,7 @@
+[
+    "cat__kepler_disposition_CANDIDATE",
+    "cat__kepler_disposition_FALSE POSITIVE",
+    "num__disposition_score",
+    "num__transit_depth_ppm",
+    "num__stellar_temp_K"
+]

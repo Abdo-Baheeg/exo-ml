@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "dataset": "local_k2",
+    "run_id": "1920c6e5-46af-4498-87c1-d36c23197b01"
+  },
+  "results": {
+    "RandomForest": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "auc": null
+    },
+    "LogisticRegression": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "auc": null
+    },
+    "XGBoost": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "auc": null
+    }
+  }
+}

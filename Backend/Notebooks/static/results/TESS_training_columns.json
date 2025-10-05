@@ -1,0 +1,16 @@
+[
+  "planet_radius_earth",
+  "transit_depth_ppm",
+  "orbital_period_days",
+  "transit_duration_hrs",
+  "insolation_flux_earth",
+  "equilibrium_temp_k",
+  "stellar_temp_k",
+  "stellar_logg",
+  "stellar_radius_solar",
+  "stellar_magnitude",
+  "stellar_distance_pc",
+  "RA_deg",
+  "Dec_deg",
+  "disposition"
+]

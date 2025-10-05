@@ -1,0 +1,15 @@
+{
+  "planet_radius_earth": 10.544,
+  "transit_depth_ppm": 4700.0,
+  "orbital_period_days": 4.088721700000001,
+  "transit_duration_hrs": 2.727,
+  "insolation_flux_earth": 363.901,
+  "equilibrium_temp_k": 1183.0137325,
+  "stellar_temp_k": 5800.55,
+  "stellar_logg": 4.33,
+  "stellar_radius_solar": 1.23434,
+  "stellar_magnitude": 11.814,
+  "stellar_distance_pc": 365.00800000000004,
+  "RA_deg": 160.630713,
+  "Dec_deg": 5.044388
+}
