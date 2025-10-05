@@ -29,18 +29,18 @@ export default function Navbar() {
             >
               Predict
             </Link>
-            <a 
-              href="/#timeline" 
+            <Link 
+              to="/insights" 
               className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
             >
-              Timeline
-            </a>
-            <a 
-              href="/#dashboard" 
+              Insights
+            </Link>
+            <Link 
+              to="/about" 
               className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
             >
-              Dashboard
-            </a>
+              About
+            </Link>
           </div>
 
           {/* CTA Button - Desktop */}
@@ -85,20 +85,20 @@ export default function Navbar() {
               >
                 Predict
               </Link>
-              <a 
-                href="/#timeline" 
+              <Link 
+                to="/insights" 
                 className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                Timeline
-              </a>
-              <a 
-                href="/#dashboard" 
+                Insights
+              </Link>
+              <Link 
+                to="/about" 
                 className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                Dashboard
-              </a>
+                About
+              </Link>
               <Link
                 to="/predict"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full text-white text-sm font-semibold"

@@ -45,12 +45,12 @@ export default function Footer() {
               <Link to="/predict" className="block text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                 Predict
               </Link>
-              <a href="/#timeline" className="block text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Timeline
-              </a>
-              <a href="/#dashboard" className="block text-gray-400 hover:text-cyan-400 transition-colors text-sm">
-                Dashboard
-              </a>
+              <Link to="/insights" className="block text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                Insights
+              </Link>
+              <Link to="/about" className="block text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                About
+              </Link>
             </div>
           </div>
 
