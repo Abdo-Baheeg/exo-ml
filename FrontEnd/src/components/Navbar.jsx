@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
@@ -19,25 +20,41 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             <Link 
               to="/" 
-              className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+              className={`text-sm font-medium transition-all relative ${
+                location.pathname === "/" 
+                  ? "text-white after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-blue-500 after:rounded-full" 
+                  : "text-gray-300 hover:text-white"
+              }`}
             >
               Home
             </Link>
             <Link 
               to="/predict" 
-              className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+              className={`text-sm font-medium transition-all relative ${
+                location.pathname === "/predict" 
+                  ? "text-white after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-blue-500 after:rounded-full" 
+                  : "text-gray-300 hover:text-white"
+              }`}
             >
               Predict
             </Link>
             <Link 
               to="/insights" 
-              className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+              className={`text-sm font-medium transition-all relative ${
+                location.pathname === "/insights" 
+                  ? "text-white after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-blue-500 after:rounded-full" 
+                  : "text-gray-300 hover:text-white"
+              }`}
             >
               Insights
             </Link>
             <Link 
               to="/about" 
-              className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+              className={`text-sm font-medium transition-all relative ${
+                location.pathname === "/about" 
+                  ? "text-white after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-blue-500 after:rounded-full" 
+                  : "text-gray-300 hover:text-white"
+              }`}
             >
               About
             </Link>
@@ -73,28 +90,44 @@ export default function Navbar() {
             <div className="flex flex-col gap-4">
               <Link 
                 to="/" 
-                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === "/" 
+                    ? "text-cyan-400 font-semibold" 
+                    : "text-gray-300 hover:text-white"
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 Home
               </Link>
               <Link 
                 to="/predict" 
-                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === "/predict" 
+                    ? "text-cyan-400 font-semibold" 
+                    : "text-gray-300 hover:text-white"
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 Predict
               </Link>
               <Link 
                 to="/insights" 
-                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === "/insights" 
+                    ? "text-cyan-400 font-semibold" 
+                    : "text-gray-300 hover:text-white"
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 Insights
               </Link>
               <Link 
                 to="/about" 
-                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === "/about" 
+                    ? "text-cyan-400 font-semibold" 
+                    : "text-gray-300 hover:text-white"
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 About

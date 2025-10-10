@@ -16,7 +16,7 @@ export default function Dashboard() {
         setPreds(data.predictions || []);
       })
       .catch((err) => {
-        console.error("Failed to load predictions:", err);
+        // Error loading predictions - handle silently
         setPreds([]);
       })
       .finally(() => setLoading(false));

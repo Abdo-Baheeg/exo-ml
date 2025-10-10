@@ -5,13 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true,
-    proxy: {
-      '/api': {
-        target: 'https://exo-ml-production.up.railway.app/',
-        changeOrigin: true,
-        secure: false
-      }
-    }
+    host: true
   }
 })

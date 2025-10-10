@@ -24,7 +24,7 @@ export default function NotebookRun() {
           setSelectedNotebook(notebooks[0]);
         }
       } catch (error) {
-        console.log("Using default notebooks list");
+        // Fallback to default notebooks list
         setSelectedNotebook(notebooks[0]);
       } finally {
         setLoadingNotebooks(false);

@@ -30,7 +30,7 @@ export default function PredictPage() {
                     setFeatureValues(initialValues);
                 }
             } catch (error) {
-                console.error("Error fetching model features:", error);
+                // Error loading model features - handle silently or show user message
             }
         };
 
