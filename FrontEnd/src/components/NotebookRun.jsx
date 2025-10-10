@@ -232,34 +232,109 @@ export default function NotebookRun() {
 
                       {/* Artifacts */}
                       {output.artifacts && (
-                        <div className="p-4 bg-white/5 rounded-lg">
+                        <div className="space-y-3">
                           <div className="text-sm font-semibold text-gray-300 mb-3">📁 Generated Artifacts</div>
-                          <div className="space-y-2 text-sm">
-                            {output.artifacts.models_saved && output.artifacts.models_saved.length > 0 && (
-                              <div className="flex items-center gap-2 text-green-400">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          
+                          {/* Models */}
+                          {output.artifacts.models && output.artifacts.models.count > 0 && (
+                            <div className="p-4 bg-white/5 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                                 </svg>
-                                <span>{output.artifacts.models_saved.length} model file(s) saved</span>
+                                <span className="font-medium text-purple-300">Trained Models ({output.artifacts.models.count})</span>
                               </div>
-                            )}
-                            {output.artifacts.plots_generated && output.artifacts.plots_generated.length > 0 && (
-                              <div className="flex items-center gap-2 text-blue-400">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <div className="text-xs text-gray-400 space-y-1 ml-7">
+                                {output.artifacts.models.files.map((file, idx) => (
+                                  <div key={idx} className="truncate">• {file.split('/').pop()}</div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Plots */}
+                          {output.artifacts.plots && output.artifacts.plots.count > 0 && (
+                            <div className="p-4 bg-white/5 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
-                                <span>{output.artifacts.plots_generated.length} plot(s) generated</span>
+                                <span className="font-medium text-blue-300">Visualizations ({output.artifacts.plots.count})</span>
                               </div>
-                            )}
-                            {output.artifacts.metrics_file && (
-                              <div className="flex items-center gap-2 text-purple-400">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <div className="text-xs text-gray-400 space-y-2 ml-7">
+                                {output.artifacts.plots.by_type.confusion_matrices.length > 0 && (
+                                  <div>
+                                    <div className="text-cyan-400 mb-1">Confusion Matrices ({output.artifacts.plots.by_type.confusion_matrices.length})</div>
+                                    {output.artifacts.plots.by_type.confusion_matrices.slice(0, 3).map((file, idx) => (
+                                      <div key={idx} className="truncate pl-2">• {file.split('/').pop()}</div>
+                                    ))}
+                                  </div>
+                                )}
+                                {output.artifacts.plots.by_type.roc_curves.length > 0 && (
+                                  <div>
+                                    <div className="text-green-400 mb-1">ROC Curves ({output.artifacts.plots.by_type.roc_curves.length})</div>
+                                    {output.artifacts.plots.by_type.roc_curves.slice(0, 3).map((file, idx) => (
+                                      <div key={idx} className="truncate pl-2">• {file.split('/').pop()}</div>
+                                    ))}
+                                  </div>
+                                )}
+                                {output.artifacts.plots.by_type.feature_importance.length > 0 && (
+                                  <div>
+                                    <div className="text-purple-400 mb-1">Feature Importance ({output.artifacts.plots.by_type.feature_importance.length})</div>
+                                    {output.artifacts.plots.by_type.feature_importance.slice(0, 3).map((file, idx) => (
+                                      <div key={idx} className="truncate pl-2">• {file.split('/').pop()}</div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Data Files */}
+                          {output.artifacts.data_files && (output.artifacts.data_files.metrics || output.artifacts.data_files.training_columns || output.artifacts.data_files.top_features.length > 0) && (
+                            <div className="p-4 bg-white/5 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                <span>Metrics file exported</span>
+                                <span className="font-medium text-green-300">Data Files</span>
                               </div>
-                            )}
-                          </div>
+                              <div className="text-xs text-gray-400 space-y-1 ml-7">
+                                {output.artifacts.data_files.metrics && (
+                                  <div className="flex items-center gap-2">
+                                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Metrics JSON exported</span>
+                                  </div>
+                                )}
+                                {output.artifacts.data_files.training_columns && (
+                                  <div className="flex items-center gap-2">
+                                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Training columns saved</span>
+                                  </div>
+                                )}
+                                {output.artifacts.data_files.feature_medians && (
+                                  <div className="flex items-center gap-2">
+                                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Feature medians calculated</span>
+                                  </div>
+                                )}
+                                {output.artifacts.data_files.top_features.length > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{output.artifacts.data_files.top_features.length} top features file(s)</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

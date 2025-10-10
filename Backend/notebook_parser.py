@@ -39,17 +39,34 @@ def parse_success(notebook_name, dataset_name, execution_time):
     # Try to load metrics from saved JSON file
     metrics_file = os.path.join('static', 'results', f'{dataset_name}_metrics.json')
     training_cols_file = os.path.join('static', 'results', f'{dataset_name}_training_columns.json')
+    medians_file = os.path.join('static', 'results', f'{dataset_name}_feature_medians.json')
     
     results = {
         "models_trained": [],
+        "best_model": None,
         "metrics": {}
     }
     
     artifacts = {
-        "models_saved": [],
-        "plots_generated": [],
-        "metrics_file": None,
-        "training_columns_file": None
+        "models": {
+            "count": 0,
+            "files": []
+        },
+        "plots": {
+            "count": 0,
+            "by_type": {
+                "confusion_matrices": [],
+                "roc_curves": [],
+                "feature_importance": [],
+                "other": []
+            }
+        },
+        "data_files": {
+            "metrics": None,
+            "training_columns": None,
+            "feature_medians": None,
+            "top_features": []
+        }
     }
     
     # Read metrics if available
@@ -58,58 +75,118 @@ def parse_success(notebook_name, dataset_name, execution_time):
             with open(metrics_file, 'r') as f:
                 metrics_data = json.load(f)
                 
-                # Extract model names and metrics
-                if isinstance(metrics_data, dict):
-                    for model_name, model_metrics in metrics_data.items():
+                # Handle both simple dict and nested 'results' structure
+                if 'results' in metrics_data:
+                    model_metrics = metrics_data['results']
+                else:
+                    model_metrics = metrics_data
+                
+                # Extract model names and find best model
+                best_accuracy = 0
+                for model_name, model_data in model_metrics.items():
+                    if isinstance(model_data, dict):
                         results["models_trained"].append(model_name)
                         
-                        # Store best model metrics
-                        if not results["metrics"] or model_metrics.get('accuracy', 0) > results["metrics"].get('accuracy', 0):
+                        accuracy = model_data.get('accuracy', 0)
+                        if accuracy > best_accuracy:
+                            best_accuracy = accuracy
                             results["best_model"] = model_name
                             results["metrics"] = {
-                                "accuracy": round(model_metrics.get('accuracy', 0) * 100, 2),
-                                "precision": round(model_metrics.get('precision', 0) * 100, 2),
-                                "recall": round(model_metrics.get('recall', 0) * 100, 2),
-                                "f1_score": round(model_metrics.get('f1_score', 0) * 100, 2)
+                                "accuracy": round(accuracy * 100, 2),
+                                "precision": round(model_data.get('precision', 0) * 100, 2),
+                                "recall": round(model_data.get('recall', 0) * 100, 2),
+                                "f1_score": round(model_data.get('f1', 0) * 100, 2),
+                                "auc": round(model_data.get('auc', 0) * 100, 2) if model_data.get('auc') else None
                             }
                 
-                artifacts["metrics_file"] = metrics_file
+                artifacts["data_files"]["metrics"] = metrics_file.replace('\\', '/')
         except Exception as e:
-            pass  # Metrics file exists but couldn't be read
+            print(f"Error reading metrics file: {e}")
     
     # Check for training columns file
     if os.path.exists(training_cols_file):
-        artifacts["training_columns_file"] = training_cols_file
+        artifacts["data_files"]["training_columns"] = training_cols_file.replace('\\', '/')
+    
+    # Check for medians file
+    if os.path.exists(medians_file):
+        artifacts["data_files"]["feature_medians"] = medians_file.replace('\\', '/')
+    
+    # Find top features files
+    results_dir = os.path.join('static', 'results')
+    if os.path.exists(results_dir):
+        for file in os.listdir(results_dir):
+            if file.startswith(dataset_name) and 'top_features' in file and file.endswith('.json'):
+                artifacts["data_files"]["top_features"].append(os.path.join('static', 'results', file).replace('\\', '/'))
     
     # Find saved models
     models_dir = os.path.join('static', 'models')
     if os.path.exists(models_dir):
         for file in os.listdir(models_dir):
-            if file.startswith(dataset_name) and file.endswith('.pkl'):
-                artifacts["models_saved"].append(os.path.join('static', 'models', file))
+            # Match both "ModelName_pipeline.pkl" and "Dataset_ModelName_pipeline.pkl" patterns
+            if file.endswith('_pipeline.pkl'):
+                model_path = os.path.join('static', 'models', file).replace('\\', '/')
+                artifacts["models"]["files"].append(model_path)
+        artifacts["models"]["count"] = len(artifacts["models"]["files"])
     
-    # Find generated plots
+    # Find generated plots and categorize them
     plots_dir = os.path.join('static', 'plots')
     if os.path.exists(plots_dir):
         for file in os.listdir(plots_dir):
             if file.startswith(dataset_name) and file.endswith('.png'):
-                artifacts["plots_generated"].append(os.path.join('static', 'plots', file))
+                plot_path = os.path.join('static', 'plots', file).replace('\\', '/')
+                
+                # Categorize plot by type
+                if 'confusion' in file.lower():
+                    artifacts["plots"]["by_type"]["confusion_matrices"].append(plot_path)
+                elif 'roc' in file.lower():
+                    artifacts["plots"]["by_type"]["roc_curves"].append(plot_path)
+                elif 'topk' in file.lower() or 'feature' in file.lower():
+                    artifacts["plots"]["by_type"]["feature_importance"].append(plot_path)
+                else:
+                    artifacts["plots"]["by_type"]["other"].append(plot_path)
+        
+        # Calculate total plot count
+        artifacts["plots"]["count"] = sum([
+            len(plots) for plots in artifacts["plots"]["by_type"].values()
+        ])
     
-    # Generate next steps
+    # Generate comprehensive next steps
     next_steps = []
-    if artifacts["models_saved"]:
-        next_steps.append(f"✅ {len(artifacts['models_saved'])} model(s) ready for predictions at /api/predict")
-    if artifacts["metrics_file"]:
-        next_steps.append(f"📊 View detailed metrics at /{metrics_file}")
-    if artifacts["plots_generated"]:
-        next_steps.append(f"📈 {len(artifacts['plots_generated'])} plot(s) available in /static/plots/")
+    
+    if artifacts["models"]["count"] > 0:
+        next_steps.append(f"✅ {artifacts['models']['count']} trained model(s) ready for predictions")
+        next_steps.append(f"🔮 Use /api/predict endpoint with model name: {', '.join(results['models_trained'])}")
+    
+    if results["best_model"]:
+        next_steps.append(f"🏆 Best performing model: {results['best_model']} ({results['metrics']['accuracy']:.1f}% accuracy)")
+    
+    if artifacts["plots"]["count"] > 0:
+        cm_count = len(artifacts["plots"]["by_type"]["confusion_matrices"])
+        roc_count = len(artifacts["plots"]["by_type"]["roc_curves"])
+        feat_count = len(artifacts["plots"]["by_type"]["feature_importance"])
+        
+        plots_summary = []
+        if cm_count > 0:
+            plots_summary.append(f"{cm_count} confusion matrix")
+        if roc_count > 0:
+            plots_summary.append(f"{roc_count} ROC curve")
+        if feat_count > 0:
+            plots_summary.append(f"{feat_count} feature importance")
+        
+        next_steps.append(f"� {artifacts['plots']['count']} visualization(s) generated: {', '.join(plots_summary)}")
+    
+    if artifacts["data_files"]["metrics"]:
+        next_steps.append(f"📈 Detailed metrics available at /{artifacts['data_files']['metrics']}")
+    
+    if artifacts["data_files"]["training_columns"]:
+        next_steps.append(f"🔧 Training configuration saved - ready for production use")
     
     if not next_steps:
         next_steps.append("✅ Notebook executed successfully")
     
     return {
         "success": True,
-        "message": "Notebook executed successfully",
+        "message": f"Successfully trained {len(results['models_trained'])} model(s) for {dataset_name} dataset",
         "notebook": notebook_name,
         "dataset": dataset_name,
         "execution_time": round(execution_time, 1),
