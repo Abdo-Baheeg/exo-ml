@@ -13,6 +13,19 @@ All necessary files are configured for Railway deployment:
 
 ---
 
+## ✅ Recent Fixes Applied
+
+### Cross-Platform Path Compatibility
+**Issue**: Notebooks were using Windows-style paths (`Data Sources\file.csv`) which fail on Railway's Linux environment.
+
+**Fix Applied**: All notebook paths updated to use `os.path.join()` for cross-platform compatibility:
+- ✅ `os.path.join('Data Sources', 'TESS.csv')` instead of `'Data Sources\TESS.csv'`
+- ✅ `'../static/models'` instead of `r'static\models'`
+
+This ensures notebooks work on both Windows (local development) and Linux (Railway deployment).
+
+---
+
 ## 🚀 Deployment Steps
 
 ### Step 1: Prepare Your Repository
@@ -21,7 +34,7 @@ Ensure all changes are committed and pushed to GitHub:
 
 ```bash
 git add .
-git commit -m "Update dependencies for Railway deployment"
+git commit -m "Fix notebook paths for cross-platform compatibility"
 git push origin main
 ```
 
