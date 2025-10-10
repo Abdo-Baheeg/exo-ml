@@ -7,6 +7,7 @@ export default function About() {
       name: "Abdelrahman Ghazy",
       role: "Machine Learning Engineer",
       color: "from-cyan-500 to-blue-500",
+      photo: "/images/abdelrahman_ghazy.jpg",
       contributions: ["Model architecture design", "XGBoost implementation", "Performance optimization"],
       skills: ["Python", "XGBoost", "Scikit-learn"]
     },
@@ -14,6 +15,7 @@ export default function About() {
       name: "Zeyad Ahmed",
       role: "Data Engineer",
       color: "from-purple-500 to-pink-500",
+      photo: "/images/zeyad_ahmed.jpg",
       contributions: ["Data preprocessing pipeline", "Feature engineering", "Statistical analysis"],
       skills: ["Pandas", "NumPy", "Data Cleaning"]
     },
@@ -21,6 +23,7 @@ export default function About() {
       name: "Aly Mahmoud",
       role: "Machine Learning Engineer",
       color: "from-green-500 to-emerald-500",
+      photo: "/images/aly_mahmoud.jpg",
       contributions: ["Random Forest implementation", "Model evaluation", "Hyperparameter tuning"],
       skills: ["Python", "Machine Learning", "Model Optimization"]
     },
@@ -28,6 +31,7 @@ export default function About() {
       name: "Abdelrahman Adel",
       role: "Data Analyst",
       color: "from-orange-500 to-red-500",
+      photo: "/images/abdelrahman_adel.jpg",
       contributions: ["Exploratory data analysis", "Feature selection", "Data visualization"],
       skills: ["Python", "Statistics", "Visualization"]
     },
@@ -35,6 +39,7 @@ export default function About() {
       name: "Omar Marey",
       role: "Backend Developer",
       color: "from-yellow-500 to-orange-500",
+      photo: "/images/omar_marey.jpg",
       contributions: ["Flask API development", "Database integration", "Notebook execution system"],
       skills: ["Flask", "Python", "REST APIs"]
     },
@@ -42,6 +47,7 @@ export default function About() {
       name: "Abdelrahman Bahig",
       role: "Frontend Developer",
       color: "from-blue-500 to-indigo-500",
+      photo: "/images/abdelrahman_bahig.jpg",
       contributions: ["React UI development", "Interactive visualizations", "User experience design"],
       skills: ["React", "Tailwind CSS", "JavaScript"]
     }
@@ -132,8 +138,28 @@ export default function About() {
               >
                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${member.color} rounded-t-2xl`}></div>
                 
+                {/* Photo */}
+                <div className="mb-6 flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white/10 group-hover:border-cyan-500/50 transition-all duration-300">
+                    <img 
+                      src={member.photo} 
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to gradient background if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = `
+                          <div class="w-full h-full bg-gradient-to-br ${member.color} flex items-center justify-center text-4xl font-bold text-white">
+                            ${member.name.charAt(0)}
+                          </div>
+                        `;
+                      }}
+                    />
+                  </div>
+                </div>
+
                 {/* Name and Role */}
-                <div className="mb-6">
+                <div className="mb-6 text-center">
                   <h3 className="text-2xl font-bold text-white mb-2">{member.name}</h3>
                   <p className={`text-sm font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent uppercase tracking-wider`}>
                     {member.role}
