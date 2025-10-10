@@ -26,7 +26,7 @@ def init_db():
             probability REAL NOT NULL,
             label TEXT NOT NULL,
             raw_output TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT NOT NULL
         )
     """)
     conn.commit()
@@ -39,16 +39,20 @@ def save_prediction(dataset, model, features, probability, label, raw_output):
         conn = get_connection()
         cursor = conn.cursor()
         
+        # Use ISO format timestamp
+        timestamp = datetime.now().isoformat()
+        
         cursor.execute("""
-            INSERT INTO predictions (dataset, model, features, probability, label, raw_output)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO predictions (dataset, model, features, probability, label, raw_output, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             dataset,
             model,
             json.dumps(features),
             float(probability),
             label,
-            json.dumps(raw_output) if raw_output else None
+            json.dumps(raw_output) if raw_output else None,
+            timestamp
         ))
         
         conn.commit()

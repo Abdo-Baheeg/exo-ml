@@ -141,7 +141,7 @@ export default function Dashboard() {
                   <thead>
                     <tr className="text-left text-gray-300">
                       <th className="pb-2">Time</th>
-                      <th className="pb-2">Notebook</th>
+                      <th className="pb-2">Dataset</th>
                       <th className="pb-2">Model</th>
                       <th className="pb-2">Prob</th>
                       <th className="pb-2">Label</th>
@@ -150,8 +150,13 @@ export default function Dashboard() {
                   <tbody>
                     {preds.slice(0, 12).map((p) => (
                       <tr key={p.id} className="border-t border-gray-800">
-                        <td className="py-2">{new Date(p.timestamp).toLocaleString()}</td>
-                        <td className="py-2">{p.notebook}</td>
+                        <td className="py-2">{p.created_at ? new Date(p.created_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : 'N/A'}</td>
+                        <td className="py-2">{p.dataset || p.notebook || 'N/A'}</td>
                         <td className="py-2">{p.model}</td>
                         <td className="py-2">{Number(p.probability).toFixed(3)}</td>
                         <td className="py-2">{p.label}</td>

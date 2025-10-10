@@ -3,8 +3,10 @@ from flask_cors import CORS
 import os
 import subprocess
 import json
+from datetime import datetime
 from utils import init_db, save_prediction, get_predictions
 from models import predict_with_model, get_model_features
+from notebook_parser import parse_notebook_output, parse_timeout_error
 
 app = Flask(__name__)
 
@@ -127,13 +129,13 @@ def list_notebooks():
 
 @app.route('/api/run-notebook', methods=['POST'])
 def run_notebook():
-    """تشغيل نوت بوك معين"""
+    """Execute a notebook and return user-friendly results"""
     try:
         data = request.get_json()
         notebook_name = data.get('notebook')
 
         if not notebook_name:
-            return jsonify({"error": "No notebook specified"}), 400
+            return jsonify({"error": "No notebook specified", "success": False}), 400
 
         # Use absolute path and correct folder name
         notebook_path = os.path.join(
@@ -143,25 +145,45 @@ def run_notebook():
         )
 
         if not os.path.exists(notebook_path):
-            return jsonify({"error": f"Notebook not found: {notebook_name}"}), 404
+            return jsonify({
+                "error": "Notebook not found",
+                "message": f"Notebook '{notebook_name}' does not exist",
+                "success": False
+            }), 404
 
-        # تشغيل النوت بوك باستخدام nbconvert
+        # Track execution time
+        execution_start = datetime.now()
+        
+        # Execute notebook using nbconvert
+        timeout_seconds = 300
         result = subprocess.run([
             'jupyter', 'nbconvert', '--to', 'notebook', '--execute',
             '--inplace', notebook_path
-        ], capture_output=True, text=True, timeout=300)
+        ], capture_output=True, text=True, timeout=timeout_seconds)
 
-        return jsonify({
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode
-        })
+        # Parse result and return user-friendly output
+        parsed_output = parse_notebook_output(notebook_name, result, execution_start)
+        
+        status_code = 200 if parsed_output["success"] else 500
+        return jsonify(parsed_output), status_code
 
     except subprocess.TimeoutExpired:
-        return jsonify({"error": "Notebook execution timeout"}), 500
+        execution_time = (datetime.now() - execution_start).total_seconds()
+        timeout_output = parse_timeout_error(notebook_name, execution_time, timeout_seconds)
+        return jsonify(timeout_output), 500
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error": "Unexpected error",
+            "message": str(e),
+            "notebook": notebook_name if 'notebook_name' in locals() else "unknown",
+            "troubleshooting": [
+                "🔍 Check backend logs for details",
+                "🔄 Verify Jupyter is properly installed",
+                "📦 Ensure all dependencies are available"
+            ]
+        }), 500
 
 @app.route('/api/predict', methods=['POST'])
 def predict():

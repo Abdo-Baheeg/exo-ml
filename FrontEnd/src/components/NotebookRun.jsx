@@ -165,83 +165,168 @@ export default function NotebookRun() {
                     ? "bg-green-500/5 border-green-500/30" 
                     : "bg-blue-500/5 border-blue-500/30"
                 }`}>
-                  <div className="flex items-center gap-3 mb-4">
-                    {output.error ? (
-                      <>
-                        <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 className="text-lg font-semibold text-red-300">Execution Error</h3>
-                      </>
-                    ) : output.success ? (
-                      <>
-                        <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 className="text-lg font-semibold text-green-300">Execution Successful</h3>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 className="text-lg font-semibold text-blue-300">Execution Output</h3>
-                      </>
-                    )}
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      {output.error ? (
+                        <>
+                          <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div>
+                            <h3 className="text-lg font-semibold text-red-300">Execution Failed</h3>
+                            <p className="text-xs text-red-400">{output.message}</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div>
+                            <h3 className="text-lg font-semibold text-green-300">{output.message}</h3>
+                            <p className="text-xs text-green-400">Completed in {output.execution_time}s</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Display instructions if available */}
-                  {output.instructions && (
-                    <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <p className="font-semibold text-yellow-300 mb-2">Setup Required:</p>
-                          <p className="text-sm text-gray-300 mb-2">{output.message}</p>
-                          <div className="bg-black/40 rounded px-3 py-2 font-mono text-sm text-yellow-200">
-                            {output.instructions}
+                  {/* Success Content */}
+                  {output.success && output.results && (
+                    <div className="space-y-4">
+                      {/* Model Results */}
+                      {output.results.models_trained && output.results.models_trained.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-white/5 rounded-lg">
+                            <div className="text-xs text-gray-400 uppercase mb-2">Models Trained</div>
+                            <div className="flex flex-wrap gap-2">
+                              {output.results.models_trained.map((model, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
+                                  {model}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {output.results.best_model && (
+                            <div className="p-4 bg-white/5 rounded-lg">
+                              <div className="text-xs text-gray-400 uppercase mb-2">Best Model</div>
+                              <div className="text-lg font-bold text-cyan-400">{output.results.best_model}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Metrics */}
+                      {output.results.metrics && Object.keys(output.results.metrics).length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {Object.entries(output.results.metrics).map(([key, value]) => (
+                            <div key={key} className="p-4 bg-white/5 rounded-lg text-center">
+                              <div className="text-xs text-gray-400 uppercase mb-1">{key.replace('_', ' ')}</div>
+                              <div className="text-2xl font-bold text-white">{value}%</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Artifacts */}
+                      {output.artifacts && (
+                        <div className="p-4 bg-white/5 rounded-lg">
+                          <div className="text-sm font-semibold text-gray-300 mb-3">📁 Generated Artifacts</div>
+                          <div className="space-y-2 text-sm">
+                            {output.artifacts.models_saved && output.artifacts.models_saved.length > 0 && (
+                              <div className="flex items-center gap-2 text-green-400">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{output.artifacts.models_saved.length} model file(s) saved</span>
+                              </div>
+                            )}
+                            {output.artifacts.plots_generated && output.artifacts.plots_generated.length > 0 && (
+                              <div className="flex items-center gap-2 text-blue-400">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                <span>{output.artifacts.plots_generated.length} plot(s) generated</span>
+                              </div>
+                            )}
+                            {output.artifacts.metrics_file && (
+                              <div className="flex items-center gap-2 text-purple-400">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Metrics file exported</span>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* Next Steps */}
+                      {output.next_steps && output.next_steps.length > 0 && (
+                        <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                          <div className="text-sm font-semibold text-cyan-300 mb-2">📋 Next Steps</div>
+                          <ul className="space-y-1 text-sm text-gray-300">
+                            {output.next_steps.map((step, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="text-cyan-400 mt-0.5">•</span>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
-                  
-                  {/* Output content */}
-                  {(output.stdout || output.stderr || output.error) && (
-                    <div className="bg-black/40 rounded-lg p-4 max-h-96 overflow-auto">
-                      <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
-                        {output.message && !output.instructions && (
-                          <div className="text-yellow-300 mb-2">⚠️ {output.message}\n\n</div>
-                        )}
-                        {output.error && typeof output.error === 'string'
-                          ? output.error 
-                          : output.stderr 
-                          ? output.stderr 
-                          : output.stdout
-                          ? output.stdout
-                          : JSON.stringify(output, null, 2)
-                        }
-                      </pre>
+
+                  {/* Error Content */}
+                  {output.error && (
+                    <div className="space-y-4">
+                      {/* Error Details */}
+                      {output.error_details && (
+                        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                          <div className="text-sm font-semibold text-red-300 mb-2">Error Details</div>
+                          <div className="text-sm text-gray-300 space-y-1">
+                            <div><span className="text-red-400">Type:</span> {output.error_details.error_type}</div>
+                            <div><span className="text-red-400">Message:</span> {output.error_details.error_message}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Troubleshooting */}
+                      {output.troubleshooting && output.troubleshooting.length > 0 && (
+                        <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                          <div className="text-sm font-semibold text-yellow-300 mb-2">🔧 Troubleshooting Steps</div>
+                          <ul className="space-y-1 text-sm text-gray-300">
+                            {output.troubleshooting.map((step, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="text-yellow-400">{idx + 1}.</span>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Traceback */}
+                      {output.error_details && output.error_details.traceback && (
+                        <details className="cursor-pointer">
+                          <summary className="text-sm font-semibold text-gray-400 mb-2 hover:text-gray-300">
+                            View Full Traceback ▼
+                          </summary>
+                          <div className="bg-black/40 rounded-lg p-4 max-h-64 overflow-auto mt-2">
+                            <pre className="text-xs text-red-300 whitespace-pre-wrap font-mono">
+                              {output.error_details.traceback.join('\n')}
+                            </pre>
+                          </div>
+                        </details>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             )}
-
-            {/* Info Box */}
-            <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="text-sm text-gray-400">
-                  <p className="font-semibold text-blue-300 mb-1">Note:</p>
-                  <p>Notebook execution may take several minutes depending on the dataset size and computational complexity. The backend must be running for this feature to work.</p>
-                </div>
-              </div>
-            </div>
           </>
         )}
       </div>
